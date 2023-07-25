@@ -1,9 +1,15 @@
 name: Trivy
 
-on:
+on: 
+  push:
+    branches: [main]
   workflow_dispatch:
-  schedule:
-    - cron: '30 20 * * *'
+    inputs:
+      debug_enabled:
+        type: boolean
+        description: 'Run the build with tmate debugging enabled'
+        required: false
+        default: false
 
 jobs:
   ubuntu-build:
@@ -23,6 +29,9 @@ jobs:
         run: ./gradlew build -x check -x test -x :oracledb-examples:build
       - name: Create lib directory if not exists
         run: mkdir -p ballerina/lib
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3.13
+        if: ${{ inputs.debug_enabled }}
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
